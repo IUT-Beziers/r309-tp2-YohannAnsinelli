@@ -127,7 +127,8 @@ def EditNom():
 def EditNom2(entree):
         objetproche=Canevas.find_closest(x,y)
         modif=entree.get()
-        Canevas.itemconfigure(objetproche[0]+1, text=modif)
+        if modif!="":
+                Canevas.itemconfigure(objetproche[0]+1, text=modif)
 
 def UploadFile():
         image=Canevas.find_closest(x,y)
