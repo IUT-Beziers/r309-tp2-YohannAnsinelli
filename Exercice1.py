@@ -22,8 +22,14 @@ pc_import = PhotoImage(file="pc.png")
 routeur_import = PhotoImage(file="routeur.png")
 liste_element=[]
 liste_label=[]
+element_cable=[]
+Element1=0
 x=0
 y=0
+x1=0
+y1=0
+x2=0
+y2=0
 
 def Close():
         fenetre.destroy()
@@ -35,12 +41,27 @@ def SwitchSpawn(event=None):
         texte=Canevas.create_text(100,125,text="Switch")
         liste_label.append(texte)
 
-def CableSpawn(event=None):
-        Cable=Canevas.create_line(100,100,200,200,fill='black', width=2)
-        Canevas.update()
-        liste_element.append(Cable)
-        texte=Canevas.create_text(100,125,text="Câble")
-        liste_label.append(texte)
+def CableSpawn(event):
+        global x,y,x1,y1,x2,y2,Element1
+        x=event.x
+        y=event.y
+        Element=Canevas.find_closest(x,y)
+        if x1==0 and y1==0 and x1!=100 and y1!=100:
+                x1=int(Canevas.coords(Element)[0])
+                y1=int(Canevas.coords(Element)[1])
+                Element1=Element
+        elif x2==0 and y2==0 and x1>0 and y1>0:
+                x2=int(Canevas.coords(Element)[0])
+                y2=int(Canevas.coords(Element)[1])
+                Cable=Canevas.create_line(x1,y1,x2,y2,fill='black',width=2)
+                element_cable.append([Cable,Element1,Element])
+                Canevas.update()
+                x1=0
+                y1=0
+                x2=0
+                y2=0
+
+                
 
 def RouteurSpawn(event=None):
         Routeur=Canevas.create_image(100, 100, image=routeur_import)
@@ -67,11 +88,23 @@ def Deplacement(event):
                         texte=outils[0]+1
                 except IndexError:
                         texte=None
-                Canevas.coords(Element,x,y)
+                
                 try:
+                        Canevas.coords(Element,x,y)
                         Canevas.coords(texte,x,y+25)
                 except:
                         None
+                for v in range(len(element_cable)):
+                        for valeur in element_cable[v]:
+                                if valeur==outils:
+                                        try:
+                                                x1=Canevas.coords(element_cable[v][1])[0]
+                                                y1=Canevas.coords(element_cable[v][1])[1]
+                                                x2=Canevas.coords(element_cable[v][2])[0]
+                                                y2=Canevas.coords(element_cable[v][2])[1]
+                                                Canevas.coords(element_cable[v][0],x1,y1,x2,y2)
+                                        except IndexError:
+                                                None
 
 def MenuCliqueDroit(event):
         global x,y
@@ -110,12 +143,15 @@ def Suppression(event):
         x=event.x
         y=event.y
         suppression=Canevas.find_closest(x,y)
-        try:
-                suppr_txt=suppression[0]+1
-        except IndexError:
-                suppr_txt=None
+        for v in range(len(element_cable)):
+                for cable in element_cable[v]:
+                        if cable==suppression:
+                                Canevas.delete(fenetre,element_cable[v][0])
+        for valeurs in liste_element:
+                if valeurs==suppression[0]:
+                        suppr_txt=valeurs+1
+                        Canevas.delete(fenetre,suppr_txt)
         Canevas.delete(fenetre,suppression)
-        Canevas.delete(fenetre,suppr_txt)
                 
 
 menu=Menu(fenetre,tearoff = 0)
@@ -125,7 +161,6 @@ menu.add_cascade(label="Outils", menu=SousMenu)
 SousMenu.add_command(label="Switch",command=SwitchSpawn)
 SousMenu.add_command(label="Routeur",command=RouteurSpawn)
 SousMenu.add_command(label="Ordinateur",command=OrdinateurSpawn)
-SousMenu.add_command(label="Câble",command=CableSpawn)
 Quitter=Menu(menu,tearoff = 0)
 menu.add_cascade(label="Quitter",menu=Quitter)
 Quitter.add_command(label="Exit",command=Close)
@@ -135,6 +170,7 @@ droit.add_command(label="Modifier Nom",command=EditNom)
 droit.add_command(label="Modifier Icône",command=UploadFile)
 
 Canevas.bind('<B1-Motion>',Deplacement)
+Canevas.bind("<Button-2>",CableSpawn) #Clique molette
 Canevas.bind('<Double-Button-1>',Suppression)
 Canevas.bind("<Button-3>",MenuCliqueDroit)
 fenetre.bind("<c>",OrdinateurSpawn)
