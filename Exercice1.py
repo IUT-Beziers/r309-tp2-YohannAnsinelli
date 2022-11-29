@@ -23,7 +23,9 @@ routeur_import = PhotoImage(file="routeur.png")
 liste_element=[]
 liste_label=[]
 element_cable=[]
+liste_temporaire=[]
 Element1=0
+tour=0
 x=0
 y=0
 x1=0
@@ -83,6 +85,7 @@ def Deplacement(event):
         y=event.y
         if x<=800 and y<=500 and x>=0 and y>=0:
                 outils=Canevas.find_closest(x,y)
+                
                 Element=outils
                 try:
                         texte=outils[0]+1
@@ -112,6 +115,56 @@ def MenuCliqueDroit(event):
         y=event.y
         droit.tk_popup(event.x_root,event.y_root)
 
+def Traitverthorz(event):
+        global x,y,x1,y1,x2,y2,Element1,liste_temporaire,tour
+        x=event.x
+        y=event.y
+        Element=Canevas.find_closest(x,y)
+        liste_temporaire.append(Element)
+        for v in range(len(element_cable)):
+                        for valeur in element_cable[v]:
+                                if valeur==Element:
+                                        try:
+                                                x1=Canevas.coords(element_cable[v][1])[0]
+                                                y1=Canevas.coords(element_cable[v][1])[1]
+                                                x2=Canevas.coords(element_cable[v][2])[0]
+                                                y2=Canevas.coords(element_cable[v][2])[1]
+                                                print(x1,y1,x2,y2)
+                                                ortho=int(x1)-int(y1)
+                                                if Element==element_cable[v][1] and ortho<0:
+                                                        Canevas.coords(element_cable[v][2],x2,y1)
+                                                        Canevas.coords(element_cable[v][0],x1,y1,x2,y1)
+                                                        x1=0
+                                                        y1=0
+                                                        x2=0
+                                                        y2=0
+                                                elif Element==element_cable[v][1] and ortho>0:
+                                                        Canevas.coords(element_cable[v][2],x1,y2)
+                                                        Canevas.coords(element_cable[v][0],x1,y1,x1,y2)
+                                                        x1=0
+                                                        y1=0
+                                                        x2=0
+                                                        y2=0
+                                                elif Element==element_cable[v][2]:
+                                                        Canevas.coords(element_cable[v][1],x1,y2)
+                                                        Canevas.coords(element_cable[v][0],x1,y2,x2,y2)
+                                                        x1=0
+                                                        y1=0
+                                                        x2=0
+                                                        y2=0
+
+                                        except IndexError:
+                                                None
+                                        
+                                        if tour==2:
+                                                liste_temporaire=[]
+                                                tour=0
+                                                        
+                
+
+                                        
+
+
 def EditNom():
         pop=Tk()
         pop.title("Edit Nom")
@@ -120,15 +173,17 @@ def EditNom():
         texte.pack(side=LEFT)
         entree=Entry(pop,bd=5)
         entree.pack()
-        btn=Button(pop,text="Valider",command=lambda: EditNom2(entree))
+        btn=Button(pop,text="Valider",command=lambda: EditNom2(entree,pop))
         btn.pack(side=RIGHT)
         pop.mainloop()
 
-def EditNom2(entree):
+def EditNom2(entree,pop):
         objetproche=Canevas.find_closest(x,y)
         modif=entree.get()
         if modif!="":
                 Canevas.itemconfigure(objetproche[0]+1, text=modif)
+        pop.destroy()
+        
 
 def UploadFile():
         image=Canevas.find_closest(x,y)
@@ -177,4 +232,5 @@ Canevas.bind("<Button-3>",MenuCliqueDroit)
 fenetre.bind("<c>",OrdinateurSpawn)
 fenetre.bind("<s>",SwitchSpawn)
 fenetre.bind("<r>",RouteurSpawn)
+fenetre.bind("<KeyPress-Control_L>",Traitverthorz)
 fenetre.mainloop()
